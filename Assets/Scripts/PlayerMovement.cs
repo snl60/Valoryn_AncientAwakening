@@ -3,7 +3,10 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f; // Movement speed
+    // Movement variables
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float dashSpeed = 15f;
+    [SerializeField] private float dashDuration = 0.2f;
 
     // Animation clips for each movement and idle direction
     [SerializeField] private AnimationClip idleUpClip;
@@ -18,7 +21,8 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private PlayerAttack playerAttack;
     private Vector2 moveInput;
-    private Vector2 lastDirection; // Tracks the last direction the player moved
+    private Vector2 lastDirection;
+    private bool isDashing = false;
 
     private void Awake()
     {
@@ -49,6 +53,26 @@ public class PlayerMovement : MonoBehaviour
                 lastDirection = new Vector2(0, moveInput.y > 0 ? 1 : -1); // Vertical (Up/Down)
             }
         }
+    }
+
+    public void Dash()
+    {
+        if (isDashing) return;
+
+        StartCoroutine(PerformDash());
+    }
+
+    private System.Collections.IEnumerator PerformDash()
+    {
+        isDashing = true;
+
+        float originalSpeed = moveSpeed;
+        moveSpeed = dashSpeed;
+
+        yield return new WaitForSeconds(dashDuration);
+
+        moveSpeed = originalSpeed;
+        isDashing = false;
     }
 
     private void Update()

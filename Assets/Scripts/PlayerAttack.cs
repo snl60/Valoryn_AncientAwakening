@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,7 +6,7 @@ public class PlayerAttack : MonoBehaviour
 {
     [Header("General Settings")]
     [SerializeField] private float meleeCooldown = 0.1f;     // Cooldown time for melee attacks
-    [SerializeField] private float rangedCooldown = 0.5f; // Cooldown time for ranged attacks
+    [SerializeField] private float rangedCooldown = 1f; // Cooldown time for ranged attacks
 
     [Header("Reference")]
     [SerializeField] private Collider2D meleeCollider;     // Collider for the sword attack
@@ -72,7 +73,7 @@ public class PlayerAttack : MonoBehaviour
         meleeCollider.enabled = false;
     }
 
-    private void RangedAttack()
+    private async void RangedAttack()
     {
         if (isAttacking) return;
 
@@ -81,21 +82,40 @@ public class PlayerAttack : MonoBehaviour
         rangedTimer = 0f;
 
         Vector2 direction = playerMovement.GetLastDirection();
+        float angle = 0f;
 
-        if (direction == Vector2.up) animator.Play("player_shoot_up");
-        else if (direction == Vector2.down) animator.Play("player_shoot_down");
-        else if (direction == Vector2.right) animator.Play("player_shoot_right");
-        else animator.Play("player_shoot_right");
+        if (direction == Vector2.up)
+        {
+            animator.Play("player_shoot_up");
+            angle = -90f;
+        }
+        else if (direction == Vector2.down)
+        {
+            animator.Play("player_shoot_down");
+            angle = 90f;
+        }
+        else if (direction == Vector2.right)
+        {
+            animator.Play("player_shoot_right");
+            angle = 0f;
+        }
+        else 
+        {
+            animator.Play("player_shoot_right");
+            angle = 180f;
+        }
 
+        Quaternion rotation = Quaternion.Euler(0, 0, angle);
 
-        // Spawn the arrow projectile
-        GameObject arrow = Instantiate(arrowPrefab, firePoint.position, firePoint.rotation);
+        // Spawn the arrow projectile after a short delay
+        await Task.Delay(400);
+        GameObject arrow = Instantiate(arrowPrefab, firePoint.position, rotation);
 
         // Set up the arrow (assuming it has a script to handle movement and collision)
         Arrow arrowScript = arrow.GetComponent<Arrow>();
         if (arrowScript != null)
         {
-            arrowScript.SetDirection(firePoint.right * (direction.x != 0 ? Mathf.Sign(direction.x) : 1)); // Aligns with facing
+            arrowScript.SetDirection(direction); // Aligns with facing
         }
     }
 

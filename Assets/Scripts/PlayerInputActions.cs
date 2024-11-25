@@ -17,6 +17,14 @@ public class PlayerInputActions : MonoBehaviour
         moveInput = value.Get<Vector2>();
     }
 
+    public void OnDash(InputValue value) 
+    {
+        if (value.isPressed)
+        {
+            FindObjectOfType<PlayerMovement>()?.Dash();
+        }
+    }
+
     private void FixedUpdate()
     {
         rb.velocity = moveInput * moveSpeed;

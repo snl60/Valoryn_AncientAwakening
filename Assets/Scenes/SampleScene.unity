@@ -3068,7 +3068,7 @@ Transform:
   m_GameObject: {fileID: 1186039416}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.125, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3226,6 +3226,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 1
+  dashSpeed: 10
+  dashDuration: 0.2
   idleUpClip: {fileID: 7400000, guid: e1753ae653005574ea4338822efeb1cf, type: 2}
   idleDownClip: {fileID: 7400000, guid: 1d953762704f61549bc25051bc33bd06, type: 2}
   idleRightClip: {fileID: 7400000, guid: 27e7a0c41a9f8fb4c8c27fa402a833a5, type: 2}
@@ -3305,6 +3307,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 1bf9f302-95e1-4062-9297-c7ef3379e380
     m_ActionName: Player/RangedAttack[/Mouse/rightButton]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1424097403}
+        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
+        m_MethodName: Dash
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 783e6a57-46bd-4df0-a012-b9f51fd12a92
+    m_ActionName: Player/Dash[/Keyboard/leftShift]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -3325,7 +3343,7 @@ MonoBehaviour:
   meleeCooldown: 1
   rangedCooldown: 0.5
   meleeCollider: {fileID: 0}
-  arrowPrefab: {fileID: 0}
+  arrowPrefab: {fileID: 2175805117009653320, guid: 33ceebd838174d6438ae6c4fdefd75a1, type: 3}
   meleeAttackDuration: 0.2
   animator: {fileID: 1424097401}
   firePoint: {fileID: 1186039417}
