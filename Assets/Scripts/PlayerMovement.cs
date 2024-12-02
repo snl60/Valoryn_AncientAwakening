@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     // Movement variables
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] public float moveSpeed = 5f;
     [SerializeField] private float dashSpeed = 15f;
     [SerializeField] private float dashDuration = 0.2f;
 
@@ -22,7 +22,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerAttack playerAttack;
     private Vector2 moveInput;
     private Vector2 lastDirection;
-    private bool isDashing = false;
+    public bool isDashing = false;
 
     private void Awake()
     {
@@ -57,7 +57,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void Dash()
     {
-        if (isDashing) return;
+        if (isDashing || playerAttack.isAttacking) return;
 
         StartCoroutine(PerformDash());
     }

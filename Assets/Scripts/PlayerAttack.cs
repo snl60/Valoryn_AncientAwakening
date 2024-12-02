@@ -5,8 +5,8 @@ using UnityEngine.InputSystem;
 public class PlayerAttack : MonoBehaviour
 {
     [Header("General Settings")]
-    [SerializeField] private float meleeCooldown = 0.1f;     // Cooldown time for melee attacks
-    [SerializeField] private float rangedCooldown = 1f; // Cooldown time for ranged attacks
+    [SerializeField] private float meleeCooldown = 0f;     // Cooldown time for melee attacks
+    [SerializeField] private float rangedCooldown = 0f; // Cooldown time for ranged attacks
 
     [Header("Reference")]
     [SerializeField] private Collider2D meleeCollider;     // Collider for the sword attack
@@ -15,7 +15,6 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Animator animator;            // Animator to trigger attack animations    
     [SerializeField] private Transform firePoint;          // Point where the arrow is spawned
     [SerializeField] private PlayerMovement playerMovement;
-
 
     private float meleeTimer = 0f;
     private float rangedTimer = 0f;
@@ -30,18 +29,17 @@ public class PlayerAttack : MonoBehaviour
 
     public void OnMeleeAttack(InputAction.CallbackContext context)
     {
-        if (context.performed && meleeTimer >= meleeCooldown)
-        {
-            MeleeAttack();
-        }
+        if (!context.performed || meleeTimer <= meleeCooldown || playerMovement.isDashing) return;
+        
+        MeleeAttack();
     }
 
     public void OnRangedAttack(InputAction.CallbackContext context)
     {
-        if (context.performed && rangedTimer >= rangedCooldown)
-        {
-            RangedAttack();
-        }
+        if (!context.performed || rangedTimer <= rangedCooldown || playerMovement.isDashing) return;
+
+        RangedAttack();
+        
     }
 
     private void MeleeAttack()
@@ -51,6 +49,8 @@ public class PlayerAttack : MonoBehaviour
         isAttacking = true;
 
         meleeTimer = 0f;
+
+        playerMovement.moveSpeed = playerMovement.moveSpeed / 2;
 
         Vector2 direction = playerMovement.GetLastDirection();
 
@@ -63,6 +63,7 @@ public class PlayerAttack : MonoBehaviour
     private void OnMeleeAttackComplete()
     {
         isAttacking = false;
+        playerMovement.moveSpeed = playerMovement.moveSpeed * 2;
         Debug.Log("Melee attack animation finished.");
     }
 
@@ -80,6 +81,8 @@ public class PlayerAttack : MonoBehaviour
         isAttacking= true;
         
         rangedTimer = 0f;
+
+        playerMovement.moveSpeed = playerMovement.moveSpeed / 2;
 
         Vector2 direction = playerMovement.GetLastDirection();
         float angle = 0f;
@@ -122,6 +125,7 @@ public class PlayerAttack : MonoBehaviour
     private void OnRangedAttackComplete()
     {
         isAttacking = false;
+        playerMovement.moveSpeed = playerMovement.moveSpeed * 2;
         Debug.Log("Ranged attack animation complete.");
     }
 }
