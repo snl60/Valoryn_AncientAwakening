@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: ground-diagonal-path_22
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: -249220395, guid: be338535255432b46b0f583ac5b04321, type: 3}
+  m_Sprite: {fileID: 1171911325, guid: 8283130eb07f2104ca76f6c4c2050e60, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1

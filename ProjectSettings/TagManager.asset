@@ -12,7 +12,7 @@ TagManager:
   - Water
   - UI
   - Player
-  - 
+  - Enemy
   - 
   - 
   - 
@@ -46,6 +46,9 @@ TagManager:
     locked: 0
   - name: HighGround
     uniqueID: 3215659409
+    locked: 0
+  - name: Enemy
+    uniqueID: 2856790793
     locked: 0
   - name: Player
     uniqueID: 1382469389

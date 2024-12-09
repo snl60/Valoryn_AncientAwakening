@@ -7,6 +7,7 @@ public class PlayerAttack : MonoBehaviour
     [Header("General Settings")]
     [SerializeField] private float meleeCooldown = 0f;     // Cooldown time for melee attacks
     [SerializeField] private float rangedCooldown = 0f; // Cooldown time for ranged attacks
+    [SerializeField] private int meleeDamage = 50;
 
     [Header("Reference")]
     [SerializeField] private Collider2D meleeCollider;     // Collider for the sword attack
@@ -15,6 +16,11 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Animator animator;            // Animator to trigger attack animations    
     [SerializeField] private Transform firePoint;          // Point where the arrow is spawned
     [SerializeField] private PlayerMovement playerMovement;
+
+    [SerializeField] private Collider2D meleeColliderDown;
+    [SerializeField] private Collider2D meleeColliderUp;
+    [SerializeField] private Collider2D meleeColliderRight;
+    [SerializeField] private Collider2D meleeColliderLeft;
 
     private float meleeTimer = 0f;
     private float rangedTimer = 0f;
@@ -65,13 +71,6 @@ public class PlayerAttack : MonoBehaviour
         isAttacking = false;
         playerMovement.moveSpeed = playerMovement.moveSpeed * 2;
         Debug.Log("Melee attack animation finished.");
-    }
-
-    private System.Collections.IEnumerator ActivateMeleeCollider()
-    {
-        meleeCollider.enabled = true;
-        yield return new WaitForSeconds(meleeAttackDuration);
-        meleeCollider.enabled = false;
     }
 
     private async void RangedAttack()
@@ -127,5 +126,36 @@ public class PlayerAttack : MonoBehaviour
         isAttacking = false;
         playerMovement.moveSpeed = playerMovement.moveSpeed * 2;
         Debug.Log("Ranged attack animation complete.");
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (isAttacking && other.CompareTag("Enemy"))
+        {
+            EnemyBase enemy = other.GetComponent<EnemyBase>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(meleeDamage);
+                Debug.Log($"Dealt {meleeDamage} damage to {other.name}.");
+            }
+        }
+    }
+
+    private void EnableMeleeCollider()
+    {
+        Vector2 direction = playerMovement.GetLastDirection();
+
+        if (direction == Vector2.up) meleeColliderUp.enabled = true;
+        else if (direction == Vector2.down) meleeColliderDown.enabled = true;
+        else if (direction == Vector2.right) meleeColliderRight.enabled = true;
+        else meleeColliderLeft.enabled = true;
+    }
+
+    private void DisableMeleeCollider()
+    {
+        meleeColliderUp.enabled = false;
+        meleeColliderDown.enabled = false;
+        meleeColliderRight.enabled = false;
+        meleeColliderLeft.enabled = false;
     }
 }
