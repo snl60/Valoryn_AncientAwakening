@@ -142,19 +142,19 @@ public class EnemySkeletonMovement : MonoBehaviour
         LastDirection = movementDirection;
     }
 
-    private void CheckForPlayer()
-    {
-        if (playerTransform == null || enemyBase.CurrentState == EnemyState.Attacking) return;
+    //private void CheckForPlayer()
+    //{
+    //    if (playerTransform == null || enemyBase.CurrentState == EnemyState.Attacking) return;
 
-        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+    //    float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
 
-        if (distanceToPlayer <= combat.meleeRange || distanceToPlayer > detectionRadius)
-        {
-            enemyBase.ChangeState(EnemyState.Attacking);
-        }
-        else
-        {
-            enemyBase.ChangeState(EnemyState.Chasing);
-        }
-    }
+    //    if (distanceToPlayer <= combat.meleeRange || distanceToPlayer > detectionRadius)
+    //    {
+    //        enemyBase.ChangeState(EnemyState.Attacking);
+    //    }
+    //    else
+    //    {
+    //        enemyBase.ChangeState(EnemyState.Chasing);
+    //    }
+    //}
 }

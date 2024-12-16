@@ -13,11 +13,11 @@ public class PlayerStats : MonoBehaviour
     
     [SerializeField] private int level = 1;
     private int experiencePoints = 0;
+
+    [SerializeField] private PlayerHUD playerHUD;
     
     [SerializeField] private string equippedMeleeWeapon = "Simple Sword";
     [SerializeField] private string equippedRangedWeapon = "Basic Bow";
-
-    private PlayerHUD playerHUD;
 
     private void Start()
     {
@@ -25,22 +25,11 @@ public class PlayerStats : MonoBehaviour
         currentStamina = maxStamina;
         currentArrowCount = maxArrowCount;
 
-        playerHUD = GetComponent<PlayerHUD>();
-
         if (playerHUD != null)
         {
             playerHUD.UpdateHealth(currentHealth);
             playerHUD.UpdateStamina(currentStamina);
             playerHUD.UpdateArrowCount(currentArrowCount);
-        }
-    }
-
-    public void TakeDamage(int damage)
-    {
-        currentHealth = Mathf.Max(0, currentHealth - damage);
-        if (playerHUD != null)
-        {
-            playerHUD.UpdateHealth(currentHealth);
         }
     }
 
@@ -66,11 +55,35 @@ public class PlayerStats : MonoBehaviour
     }
 
     public float MaxHealth => maxHealth;
-    public float CurrentHealth => currentHealth;
+    public float CurrentHealth
+    {
+        get => currentHealth;
+        set
+        {
+            currentHealth = Mathf.Clamp(value, 0, maxHealth);
+            if (playerHUD != null)
+            {
+                playerHUD.UpdateHealth(currentHealth);
+            }
+        }
+    }
 
     public float MaxStamina => maxStamina;
-    public float CurrentStamina => currentStamina;
+    public float CurrentStamina
+    {
+        get => currentStamina;
+        set
+        {
+            currentStamina = Mathf.Clamp(value, 0, maxStamina);
+            if (playerHUD != null)
+            {
+                playerHUD.UpdateStamina(currentStamina);
+            }
+        }
+    }
 
     public int MaxArrowCount => maxArrowCount;
     public int CurrentArrowCount => currentArrowCount;
+    public int Level => level;
+    public int ExperiencePoints => experiencePoints;
 }

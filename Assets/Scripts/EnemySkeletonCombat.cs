@@ -6,11 +6,12 @@ public class EnemySkeletonCombat : MonoBehaviour
     [Header("Combat Settings")]
     public float meleeRange = 1f;
     public int meleeDamage = 10;
-    public float attackCooldown = 3f;
+    public float attackCooldown = 0.01f;
 
     //[Header("References")]
     [SerializeField] private EnemySkeletonMovement movement;
     [SerializeField] private EnemySkeletonAnimator animator;
+    [SerializeField] private EnemySkeletonCombat combat;
 
     [SerializeField] private Collider2D meleeColliderDown;
     [SerializeField] private Collider2D meleeColliderUp;
@@ -23,13 +24,15 @@ public class EnemySkeletonCombat : MonoBehaviour
     public bool canAttack = true;
     public bool IsAttacking = false;
 
-    // Variables for Strategic Movement method
+    // Variables for Maneuvering between attacks
     public float retreatDistance = 2f;
-    public float moveRadius = 3f;
+    public float moveRadius = 2f;
     public float minDistanceFromPlayer = 1f;
     public float maxDistanceFromPlayer = 7f;
+    private float elapsedTime = 0f;
+    private bool isManeuvering = false;
 
-    void Start()
+    private void Start()
     {
         enemyBase = GetComponent<EnemyBase>();
 
@@ -45,18 +48,22 @@ public class EnemySkeletonCombat : MonoBehaviour
         }
     }
 
-    void Update()
+    private void Update()
     {
-        // attackTimer += Time.deltaTime;
+        if (isManeuvering)
+        {
+            elapsedTime += Time.deltaTime;
+        }
 
         if (enemyBase.CurrentState == EnemyState.Attacking && canAttack && IsPlayerInRange())
         {
+            enemyBase.ChangeState(EnemyState.Attacking);
             PerformMeleeAttack();
         }
     }
 
     // Is Player In Range bool method that checks whether the player is within melee range
-    private bool IsPlayerInRange()
+    public bool IsPlayerInRange()
     {
         if (player == null) return false;
 
@@ -67,26 +74,13 @@ public class EnemySkeletonCombat : MonoBehaviour
     // Perform Melee Attack method
     public void PerformMeleeAttack()
     {
-        //if (
-        //    enemyBase.CurrentState != EnemyState.Attacking ||
-        //    attackTimer < attackCooldown ||
-        //    IsAttacking || 
-        //    !IsPlayerInRange()
-        //) return;
-
-        if (!canAttack || enemyBase.CurrentState == EnemyState.Dead) return;
+        if (!canAttack || enemyBase.CurrentState != EnemyState.Attacking) return;
 
         canAttack = false;
-        // ActivateMeleeCollider(movement.CurrentDirection);
-
-        //Vector2 previousPosition = transform.position;
-        //movement.UpdateLastDirection(previousPosition);
-
+        IsAttacking = true;
         animator.PlayAttackAnimation();
 
         Debug.Log("Skeleton attacks the player!");
-
-        StartCoroutine(AttackCooldown());
     }
 
     // Activate Melee Collider method that activates the correct melee collider based LastDirection
@@ -121,21 +115,20 @@ public class EnemySkeletonCombat : MonoBehaviour
 
         Debug.Log("Melee attack hits the player!");
 
-        PlayerStats playerStats = other.GetComponent<PlayerStats>();
+        PlayerAttack playerAttack = other.GetComponent<PlayerAttack>();
 
-        if (playerStats == null)
+        if (playerAttack == null)
         {
-            playerStats = other.GetComponentInParent<PlayerStats>();
+            playerAttack = other.GetComponentInParent<PlayerAttack>();
         }
 
-        if (playerStats != null)
+        if (playerAttack != null)
         {
-            playerStats.TakeDamage(meleeDamage);
-            // StartCoroutine(DamageCooldown());
+            playerAttack.TakeDamage(meleeDamage);
         }
         else
         {
-            Debug.LogError("Player does not have a PlayerStats component!");
+            Debug.LogError("Player does not have a PlayerAttack component!");
         }
     }
 
@@ -151,54 +144,28 @@ public class EnemySkeletonCombat : MonoBehaviour
         Debug.Log("Skeleton attack completed.");
         IsAttacking = false;
         DeactivateMeleeCollider();
-        animator.PlayIdleAnimation();
 
+        StartCoroutine(AttackCooldown());
         StartManeuvering();
-        // StartCoroutine(AttackCooldown());
+
+        //float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+        //if (distanceToPlayer > meleeRange || !canAttack)
+        //{
+        //    enemyBase.ChangeState(EnemyState.Chasing);
+        //}
     }
 
-    // Attack Cooldown subroutine that creates a delay between attacks and apply damage
+    // Attack Cooldown coroutine that creates a delay between attacks and apply damage
     private IEnumerator AttackCooldown()
     {
         Debug.Log("Attack Cooldown started.");
+
         yield return new WaitForSeconds(attackCooldown);
-        Debug.Log("Attack Cooldown ended.");
-        if (enemyBase.CurrentState != EnemyState.Dead)
-        {
-            canAttack = true;
-            Debug.Log("Skeleton can attack again.");
-        }
         
-        //if (player != null)
-        //{
+        canAttack = true;
 
-        //    float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
-        //    if (distanceToPlayer > meleeRange)
-        //    {
-        //        enemyBase.ChangeState(EnemyState.Chasing);
-        //    }
-        //    else if (distanceToPlayer > movement.detectionRadius)
-        //    {
-        //        enemyBase.ChangeState(EnemyState.Patrolling);
-        //    }
-        //    else
-        //    {
-        //        enemyBase.ChangeState(EnemyState.Attacking);
-        //    }
-        //}
-        //else
-        //{
-        //    enemyBase.ChangeState(EnemyState.Patrolling);
-        //}
+        Debug.Log("Attack cooldown ended. Enemy can attack again.");
     }
-
-    // Damage Cooldown subroutine that ensures the player isn't damaged multiple times in one attack
-    //private IEnumerator DamageCooldown()
-    //{
-    //    canTakeDamage = false;
-    //    yield return new WaitForSeconds(attackCooldown);
-    //    canTakeDamage = true;
-    //}
 
     // Animator Event that triggers on the 4th frame of melee attack animation
     public void ApplyDamage()
@@ -217,44 +184,131 @@ public class EnemySkeletonCombat : MonoBehaviour
         meleeColliderLeft.enabled = false;
     }
 
-    public void StartManeuvering()
+    private void StartManeuvering()
     {
-        enemyBase.ChangeState(EnemyState.Maneuvering);
+        //enemyBase.ChangeState(EnemyState.Maneuvering);
+        animator.PlayIdleAnimation();
         StartCoroutine(ManeuveringRoutine());
     }
 
+    //private IEnumerator ManeuveringRoutine()
+    //{
+    //    enemyBase.ChangeState(EnemyState.Maneuvering);
+
+    //    //float maneuveringDuration = attackCooldown;
+    //    float elapsedTime = 0f;
+
+    //    Vector2 lastDirection = GetLastAttackDirection();
+    //    Vector2 retreatPosition = (Vector2)transform.position - (lastDirection.normalized * retreatDistance);
+
+    //    while (elapsedTime < attackCooldown && enemyBase.CurrentState == EnemyState.Maneuvering)
+    //    {
+    //        Vector2 currentTarget = retreatPosition;
+    //        yield return StartCoroutine(MoveToPosition(currentTarget));
+
+    //        Vector2 basePosition = (Vector2)transform.position;
+    //        Vector2 randomPoint = basePosition + Random.insideUnitCircle * moveRadius;
+
+    //        float distanceToPlayer = Vector2.Distance(randomPoint, playerTransform.position);
+
+    //        if (distanceToPlayer < minDistanceFromPlayer)
+    //        {
+    //            randomPoint = AdjustPositionAwayFromPlayer(randomPoint);
+    //        }
+
+    //        yield return StartCoroutine(MoveToPosition(randomPoint));
+
+    //        elapsedTime += Time.deltaTime;
+
+    //        if (elapsedTime > attackCooldown) break;
+    //    }
+
+    //    Debug.Log("Attack cooldown complete.");
+    //    //canAttack = true;
+
+    //    if (enemyBase.CurrentState == EnemyState.Maneuvering)
+    //    {
+    //        if (IsPlayerInRange())
+    //        {
+    //            enemyBase.ChangeState(EnemyState.Attacking);
+    //            Debug.Log("State changed to Attacking.");
+    //        }
+    //        else
+    //        {
+    //            enemyBase.ChangeState(EnemyState.Chasing);
+    //            Debug.Log("State changed to Chasing.");
+    //        }
+    //    }
+
+    //    Debug.Log("Maneuvering complete. New state: " + enemyBase.CurrentState);
+    //}
+
     private IEnumerator ManeuveringRoutine()
     {
-        Vector2 lastDirection = GetLastAttackDirection();
-        Vector2 retreatPosition = (Vector2)transform.position - (lastDirection.normalized * retreatDistance);
-        Vector2 currentTarget = retreatPosition;
-        yield return MoveToPosition(currentTarget);
+        Debug.Log("Maneuvering routine started.");
+        enemyBase.ChangeState(EnemyState.Maneuvering);
+        elapsedTime = 0f;
+        isManeuvering = true;
 
-        while (!canAttack && enemyBase.CurrentState != EnemyState.Dead)
+        Vector2 retreatPosition = (Vector2)transform.position - (GetLastAttackDirection().normalized * retreatDistance);
+
+        // Move to the retreat position
+        while (elapsedTime < attackCooldown && enemyBase.CurrentState == EnemyState.Maneuvering)
         {
-            Vector2 basePosition = (Vector2)transform.position;
-            Vector2 randomPoint = basePosition + Random.insideUnitCircle * moveRadius;
-
-            float distanceToPlayer = Vector2.Distance(randomPoint, playerTransform.position);
-
-            if (distanceToPlayer < minDistanceFromPlayer)
+            if (elapsedTime > attackCooldown) break;
+            
+            // Move to the retreat position
+            while (Vector2.Distance(transform.position, retreatPosition) > 0.1f)
             {
-                Vector2 awayFromPlayer = (randomPoint - (Vector2)playerTransform.position).normalized;
-                randomPoint = (Vector2)playerTransform.position + awayFromPlayer * minDistanceFromPlayer;
-            }
-            else if (distanceToPlayer > maxDistanceFromPlayer)
-            {
-                Vector2 towardsPlayer = ((Vector2)playerTransform.position - randomPoint).normalized;
-                randomPoint = (Vector2)playerTransform.position + towardsPlayer * maxDistanceFromPlayer;
+                transform.position = Vector2.MoveTowards(transform.position, retreatPosition, movement.chaseSpeed * Time.deltaTime);
+                elapsedTime += Time.deltaTime;
+                yield return null;
             }
 
-            currentTarget = randomPoint;
-            yield return MoveToPosition(currentTarget);
+            // Optional randomized movement
+            Vector2 randomPoint = (Vector2)transform.position + Random.insideUnitCircle * moveRadius;
 
-            //yield return new WaitForSeconds(1f);
+            if (Vector2.Distance(randomPoint, playerTransform.position) < minDistanceFromPlayer)
+            {
+                randomPoint = AdjustPositionAwayFromPlayer(randomPoint);
+            }
+
+            // Move to the randomized point
+            while (Vector2.Distance(transform.position, randomPoint) > 0.1f)
+            {
+                transform.position = Vector2.MoveTowards(transform.position, randomPoint, movement.chaseSpeed * Time.deltaTime);
+                elapsedTime += Time.deltaTime;
+                yield return null;
+
+                // Ensure the maneuvering duration doesn't exceed the attackCooldown
+                if (elapsedTime >= attackCooldown)
+                    break;
+            }
         }
 
-        enemyBase.ChangeState(EnemyState.Chasing);
+        Debug.Log("Maneuvering complete. Cooldown ended.");
+
+        // Enable attacking
+        canAttack = true;
+
+        // Transition to the next state
+        float distanceToPlayer = Vector2.Distance(transform.position, playerTransform.position);
+        if (distanceToPlayer <= meleeRange && canAttack)
+        {
+            enemyBase.ChangeState(EnemyState.Attacking);
+            PerformMeleeAttack();
+        }
+        else
+        {
+            enemyBase.ChangeState(EnemyState.Chasing);
+        }
+    }
+
+
+    private Vector2 AdjustPositionAwayFromPlayer(Vector2 position)
+    {
+        Vector2 direction = (position - (Vector2)playerTransform.position).normalized;
+        return (Vector2)playerTransform.position + direction * minDistanceFromPlayer;
     }
 
     private Vector2 GetLastAttackDirection()
@@ -272,7 +326,7 @@ public class EnemySkeletonCombat : MonoBehaviour
     private IEnumerator MoveToPosition(Vector2 targetPos)
     {
         float step = movement.chaseSpeed * Time.deltaTime;
-        while(Vector2.Distance(transform.position, targetPos) > 0.1f && !canAttack)
+        while(Vector2.Distance(transform.position, targetPos) > 0.1f)
         {
             transform.position = Vector2.MoveTowards(transform.position, targetPos, step);
             yield return null;

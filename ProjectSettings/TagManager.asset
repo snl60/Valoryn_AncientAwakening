@@ -3,7 +3,10 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Enemy
+  - CombatCollider
+  - Block
   layers:
   - Default
   - TransparentFX
@@ -13,8 +16,8 @@ TagManager:
   - UI
   - Player
   - Enemy
-  - 
-  - 
+  - CombatCollider
+  - Objects
   - 
   - 
   - 
@@ -50,6 +53,12 @@ TagManager:
   - name: Enemy
     uniqueID: 2856790793
     locked: 0
+  - name: Objects
+    uniqueID: 1303320475
+    locked: 0
   - name: Player
     uniqueID: 1382469389
+    locked: 0
+  - name: Walls
+    uniqueID: 3008340609
     locked: 0

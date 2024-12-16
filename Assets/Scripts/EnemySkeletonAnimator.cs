@@ -22,30 +22,30 @@ public class EnemySkeletonAnimator : MonoBehaviour
 
     private void Update()
     {
-        switch (enemyBase.CurrentState)
-        {
-            case EnemyState.Idle:
-                PlayIdleAnimation();
-                break;
-            case EnemyState.Patrolling:
-                movement.PatrolArea();
-                break;
-            case EnemyState.Chasing:
-                PlayWalkingAnimation();
-                break;
-            case EnemyState.Attacking:
-                PlayAttackAnimation();
-                break;
-            case EnemyState.Hit:
-                PlayHitAnimation();
-                break;
-            case EnemyState.Stunned:
-                PlayStunnedAnimation();
-                break;
-            case EnemyState.Dead:
-                PlayDeathAnimation();
-                break;
-        }
+        //switch (enemyBase.CurrentState)
+        //{
+        //    case EnemyState.Idle:
+        //        PlayIdleAnimation();
+        //        break;
+        //    case EnemyState.Patrolling:
+        //        movement.PatrolArea();
+        //        break;
+        //    case EnemyState.Chasing:
+        //        PlayWalkingAnimation();
+        //        break;
+        //    case EnemyState.Attacking:
+        //        PlayAttackAnimation();
+        //        break;
+        //    case EnemyState.Hit:
+        //        PlayHitAnimation();
+        //        break;
+        //    case EnemyState.Stunned:
+        //        PlayStunnedAnimation();
+        //        break;
+        //    case EnemyState.Dead:
+        //        PlayDeathAnimation();
+        //        break;
+        //}
     }
 
     public void PlayIdleAnimation()
@@ -71,6 +71,8 @@ public class EnemySkeletonAnimator : MonoBehaviour
 
     public void PlayWalkingAnimation()
     {
+        if (enemyBase.CurrentState == EnemyState.Attacking) return;
+        
         switch (movement.CurrentDirection)
         {
             case "up":
@@ -92,26 +94,26 @@ public class EnemySkeletonAnimator : MonoBehaviour
 
     public void PlayAttackAnimation()
     {
-        if (combat.canAttack)
+        //if (combat.canAttack)
+        //{
+        switch (movement.CurrentDirection)
         {
-            switch (movement.CurrentDirection)
-            {
-                case "up":
-                    animator.Play("skeleton_melee_up");
-                    break;
-                case "down":
-                    animator.Play("skeleton_melee_down");
-                    break;
-                case "right":
-                    spriteRenderer.flipX = false;
-                    animator.Play("skeleton_melee_right");
-                    break;
-                case "left":
-                    spriteRenderer.flipX = true;
-                    animator.Play("skeleton_melee_right");
-                    break;
-            }
+            case "up":
+                animator.Play("skeleton_melee_up");
+                break;
+            case "down":
+                animator.Play("skeleton_melee_down");
+                break;
+            case "right":
+                spriteRenderer.flipX = false;
+                animator.Play("skeleton_melee_right");
+                break;
+            case "left":
+                spriteRenderer.flipX = true;
+                animator.Play("skeleton_melee_right");
+                break;
         }
+        //}
     }
 
     public void PlayStunnedAnimation()

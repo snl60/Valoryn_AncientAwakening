@@ -5,17 +5,20 @@ using UnityEngine.InputSystem;
 public class PlayerAttack : MonoBehaviour
 {
     [Header("General Settings")]
-    [SerializeField] private float meleeCooldown = 0f;     // Cooldown time for melee attacks
-    [SerializeField] private float rangedCooldown = 0f; // Cooldown time for ranged attacks
+    [SerializeField] private float meleeCooldown = 0f;              // Cooldown time for melee attacks
+    [SerializeField] private float rangedCooldown = 0f;             // Cooldown time for ranged attacks
     [SerializeField] private int meleeDamage = 50;
 
     [Header("Reference")]
-    [SerializeField] private Collider2D meleeCollider;     // Collider for the sword attack
-    [SerializeField] private GameObject arrowPrefab;       // Arrow projectile prefab
-    [SerializeField] private float meleeAttackDuration = 0.2f; // How long the melee attack is active
-    [SerializeField] private Animator animator;            // Animator to trigger attack animations    
-    [SerializeField] private Transform firePoint;          // Point where the arrow is spawned
-    [SerializeField] private PlayerMovement playerMovement;
+    [SerializeField] private GameObject arrowPrefab;                // Arrow projectile prefab
+    [SerializeField] private float meleeAttackDuration = 0.2f;      // How long the melee attack is active
+    [SerializeField] private Animator animator;                     // Animator to trigger attack animations    
+    [SerializeField] private Transform firePoint;                   // Point where the arrow is spawned
+    [SerializeField] private PlayerMovement playerMovement;         // Movement script reference
+    [SerializeField] private PlayerStats playerStats;               // PlayerStats script reference
+    [SerializeField] private PlayerInputActions playerInputActions; // InputActions reference
+    [SerializeField] private PlayerHUD playerHUD;                   // PlayerHUD script reference
+    [SerializeField] private PlayerAttack playerAttack;
 
     [SerializeField] private Collider2D meleeColliderDown;
     [SerializeField] private Collider2D meleeColliderUp;
@@ -157,5 +160,51 @@ public class PlayerAttack : MonoBehaviour
         meleeColliderDown.enabled = false;
         meleeColliderRight.enabled = false;
         meleeColliderLeft.enabled = false;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (playerStats == null)
+        {
+            Debug.Log("PlayerStats reference is missing!");
+            return;
+        }
+
+        playerStats.CurrentHealth -= damage;
+
+        playerHUD.UpdateHealth(playerStats.CurrentHealth);
+
+        if (playerStats.CurrentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log("Player had died.");
+
+        playerInputActions.enabled = false;
+        playerMovement.enabled = false;
+        playerAttack.enabled = false;
+
+        if (animator != null)
+        {
+            animator.Play("player_death");
+        }
+
+        NotifyEnemiesOfPlayerDeath();
+    }
+
+    private void NotifyEnemiesOfPlayerDeath()
+    {
+        EnemyBase[] enemies = FindObjectsOfType<EnemyBase>();
+        foreach (EnemyBase enemy in enemies)
+        {
+            if (enemy.CurrentState == EnemyState.Attacking || enemy.CurrentState == EnemyState.Chasing)
+            {
+                enemy.ChangeState(EnemyState.Patrolling);
+            }
+        }
     }
 }
